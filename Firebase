@@ -1,0 +1,137 @@
+/* @Author Shanto2005 */
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import org.json.JSONObject;
+
+
+public class Firebase {
+    private String link;
+    
+    
+
+  public Firebase(String url) {
+      this.link = url;
+  }
+  
+ // Add data
+ public void add (String node, String id, String value) {
+   try{
+                 String firebaseUrl = link+"/"+node+"/"+id+".json";
+            String jsonData = value;
+            
+            URL url = new URL(firebaseUrl);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setDoOutput(true);
+            conn.setRequestMethod("PUT"); // Use PUT method for setting data with custom ID
+            conn.setRequestProperty("Content-Type", "application/json");
+
+            OutputStream os = conn.getOutputStream();
+            os.write(jsonData.getBytes());
+            os.flush();
+
+            if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                Toast.showText("Failed : HTTP error code : " + conn.getResponseCode(),5);
+            } else {
+                Toast.showText("Success : Data sent to Firebase!",5);
+            }
+
+            conn.disconnect();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+}
+      
+ 
+  
+  // Get value
+  public String get(String node,String id, String key) {
+      
+      try {
+            String firebaseUrl = link+"/"+node+"/"+id+"/"+key+".json";
+            
+            URL url = new URL(firebaseUrl);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            
+            BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            String inputLine;
+            StringBuilder response = new StringBuilder();
+            
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+            
+            String r = ("Response from Firebase: " + response.toString());
+                conn.disconnect();
+                return r;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } 
+      return null;   
+  }
+  
+  // Delete data
+  public void delete(String node, String id) {
+      
+      try {
+            
+            String firebaseUrl = link+"/"+node+"/"+id+".json";
+            
+            URL url = new URL(firebaseUrl);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("DELETE");
+            
+            
+            int responseCode = conn.getResponseCode();
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                Toast.showText("Data deleted successfully!",5);
+            } else {
+                Toast.showText("Failed to delete data. HTTP error code: " + responseCode,5);
+            }
+            
+            conn.disconnect();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+      
+  }
+  
+// Get object
+public String getObject(String node, String id){
+    
+    try {
+            String firebaseUrl = link+"/"+node+"/"+id+".json";
+
+            URL url = new URL(firebaseUrl);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+
+            BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            StringBuilder response = new StringBuilder();
+            String inputLine;
+
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+
+            // JSON স্ট্রিং থেকে JSON অবজেক্ট তৈরি করুন
+            JSONObject jsonObject = new JSONObject(response.toString());
+
+            // অবজেক্ট প্রিন্ট করুন
+            String r = ("Received JSON Object: " + jsonObject.toString());
+
+            conn.disconnect();
+            return r;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+}
+  
+  
+} 
